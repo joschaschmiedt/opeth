@@ -23,7 +23,7 @@ from colldata import Collector, SAMPLES_PER_SEC
 COMMPROCESS_MAX_POLLTIME = 0.1  # max amount of time that can be spent in the communication loop before returning
 
 
-class CommProcess(object):
+class CommProcess:
     """ZMQ communication process - stores data, called periodically from GUI process.
 
     Attributes:
@@ -44,12 +44,12 @@ class CommProcess(object):
             eventport (int): Open Ephys ZMQ plugin's event port, default: 5557
         """
         self.context = zmq.Context()
-        self.dataport = dataport
+        self.dataport: int = dataport
         self.eventport = eventport
         self.data_socket = None
         self.event_socket = None
         self.poller = zmq.Poller()
-        self.message_no = -1
+        self.message_num: int = -1
         self.socket_waits_reply = False
         self.event_no = 0
         self.app_name = "Plot Process"
@@ -255,17 +255,19 @@ class CommProcess(object):
                             self.msgstat_start = default_timer()
 
                     if (
-                        self.message_no != -1
-                        and header["message_no"] != self.message_no + 1
+                        self.message_num != -1
+                        and header["message_num"] != self.message_num + 1
                     ):
-                        logger.error("Missing a message at number %d", self.message_no)
-                    self.message_no = header["message_no"]
+                        logger.error("Missing a message at number %d", self.message_num)
+                    self.message_num = header["message_num"]
                     if header["type"] == "data":
                         c = header["content"]
-                        n_samples = c["n_samples"]
-                        n_channels = c["n_channels"]
-                        self.adjust_channels(n_channels)
-                        n_real_samples = c["n_real_samples"]
+                        num_samples = c["num_samples"]
+                        # channel_num = c["channel_num"]
+                        channel_num = 1
+                        self.adjust_channels(channel_num)
+                        # n_real_samples = c["n_real_samples"]
+                        n_real_samples = 0
 
                         if "sample_rate" in c:
                             self.adjust_samprate(c["sample_rate"])
@@ -281,8 +283,8 @@ class CommProcess(object):
 
                         try:
                             n_arr = np.frombuffer(message[2], dtype=np.float32)
-                            n_arr = np.reshape(n_arr, (n_channels, n_samples))
-                            # print (n_channels, n_samples)
+                            n_arr = np.reshape(n_arr, (channel_num, num_samples))
+                            # print (channel_num, n_samples)
                             if n_real_samples > 0:
                                 n_arr = n_arr[:, 0:n_real_samples]
                                 self.add_data(n_arr)
