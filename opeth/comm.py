@@ -16,8 +16,8 @@ import numpy as np
 import uuid
 import json
 
-from .openephys import OpenEphysEvent, OpenEphysSpikeEvent
-from .colldata import Collector, SAMPLES_PER_SEC
+from openephys import OpenEphysEvent, OpenEphysSpikeEvent
+from colldata import Collector, SAMPLES_PER_SEC
 
 COMMPROCESS_MAX_POLLTIME = 0.1    # max amount of time that can be spent in the communication loop before returning
 
