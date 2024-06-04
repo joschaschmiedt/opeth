@@ -4,3 +4,4 @@ docs/logs.txt
 build
 dist
 /logs.txt
+.env
